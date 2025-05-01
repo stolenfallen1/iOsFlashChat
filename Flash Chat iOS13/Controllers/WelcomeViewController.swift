@@ -10,18 +10,22 @@ class WelcomeViewController: UIViewController {
         super.viewDidLoad()
         
         titleLabel.text = Constants.appTitle
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
         
+        navigationController?.isNavigationBarHidden = true
         
-// Custom Typing animation using - LOOP
-//        titleLabel.text = ""
-//        var charIndex = 0.0
-//        
-//        let titleText = "⚡️FlashChat"
-//        for letter in titleText {
-//            Timer.scheduledTimer(withTimeInterval: 0.125 * charIndex, repeats: false) { (timer) in
-//                self.titleLabel.text?.append(letter)
-//            }
-//            charIndex += 1
-//        }
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance = appearance
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        navigationController?.isNavigationBarHidden = false
     }
 }

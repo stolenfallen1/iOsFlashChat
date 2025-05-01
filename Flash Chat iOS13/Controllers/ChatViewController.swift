@@ -14,14 +14,23 @@ class ChatViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        setupNavbar()
         tableView.dataSource = self
-//        tableView.delegate = self
         title = Constants.appTitle
         navigationItem.hidesBackButton = true
         
         tableView.register(UINib(nibName: Constants.cellNibName, bundle: nil), forCellReuseIdentifier: Constants.cellIdentifier)
         
         loadMessages()
+    }
+    
+    func setupNavbar() {
+        title = Constants.appTitle
+        navigationItem.hidesBackButton = true
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        navigationController?.navigationBar.standardAppearance = appearance
+        navigationController?.navigationBar.scrollEdgeAppearance?.backgroundColor = UIColor(named: Constants.BrandColors.purple)
     }
     
     func loadMessages() {
@@ -44,6 +53,8 @@ class ChatViewController: UIViewController {
                             self.messages.append(newMessage)
                             DispatchQueue.main.async {
                                 self.tableView.reloadData()
+                                let indexPath = IndexPath(row: self.messages.count - 1, section: 0)
+                                self.tableView.scrollToRow(at: indexPath, at: .top, animated: false)
                             }
                         }
                     }
@@ -62,6 +73,9 @@ class ChatViewController: UIViewController {
                 if let e = error {
                     print("There was an issue saving data to firestore. \(e)")
                 } else {
+                    DispatchQueue.main.async {
+                        self.messageTextfield.text = ""
+                    }
                     print("Successfully saved data.")
                 }
             }
@@ -88,16 +102,25 @@ extension ChatViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let message = messages[indexPath.row]
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: Constants.cellIdentifier, for: indexPath) as! MessageCell
-        cell.label.text = messages[indexPath.row].body
+        cell.label.text = message.body
+        
+        // This is a message from the current user
+        if message.sender == Auth.auth().currentUser?.email {
+            cell.leftImageView.isHidden = true
+            cell.rightImageView.isHidden = false
+            cell.messageBubble.backgroundColor = UIColor(named: Constants.BrandColors.lightPurple)
+            cell.label.textColor = UIColor(named: Constants.BrandColors.purple)
+        } else {
+            // This is a message from another sender.
+            cell.leftImageView.isHidden = false
+            cell.rightImageView.isHidden = true
+            cell.messageBubble.backgroundColor = UIColor(named: Constants.BrandColors.purple)
+            cell.label.textColor = UIColor(named: Constants.BrandColors.lightPurple)
+        }
+        
         return cell
     }
-        
 }
-
-// THIS LINE OF CODE CAN BE USEFULL WHEN NEEDING TO DYNAMICALLY DO SOMETHING WHILE CLICKING OR PRESSING A CERTAIN ITEM IN A TABLE VIEW, BUT IN ORDER TO BE ABLE TO USE THIS YOUR TABLE VIEW CELL'S SELECTION PROPERTY HAVE TO BE SET TO 'DEFAULT' INSTEAD OF 'NONE'
-//extension ChatViewController: UITableViewDelegate {
-//    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-//        print(indexPath.row)
-//    }
-//}
